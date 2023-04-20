@@ -1,24 +1,30 @@
-import typescript from 'rollup-plugin-typescript';
-import { terser } from 'rollup-plugin-terser';
-import { cst } from 'hel-dev-utils';
-import pkg from './package.json';
+import typescript from "rollup-plugin-typescript";
+import { terser } from "rollup-plugin-terser";
+import postcss from "rollup-plugin-postcss";
+import { cst } from "hel-dev-utils";
+import pkg from "./package.json";
 
-const env = process.env.BUILD_ENV || 'umd';
+const env = process.env.BUILD_ENV || "umd";
 const plugins = [
   typescript({
-    exclude: 'node_modules/**',
-    typescript: require('typescript'),
+    exclude: "node_modules/**",
+    typescript: require("typescript"),
+  }),
+  postcss({
+    modules: true,
+    extensions: [".css", ".less"],
+    extract: true,
   }),
 ];
 
 const env2outputConf = {
   es: {
-    format: 'es',
+    format: "es",
     name: pkg.appGroupName,
     file: `${cst.HEL_PROXY_DIR}_es/entry.js`,
   },
   umd: {
-    format: 'umd',
+    format: "umd",
     name: pkg.appGroupName,
     file: `${cst.HEL_PROXY_DIR}/entry.js`,
   },
@@ -26,16 +32,14 @@ const env2outputConf = {
 
 const outputObj = env2outputConf[env];
 
-if (process.env.MIN === 'true') {
+if (process.env.MIN === "true") {
   plugins.push(terser());
-  const [dirName] = outputObj.file.split('/');
+  const [dirName] = outputObj.file.split("/");
   outputObj.file = `${dirName}/entry.min.js`;
 }
 
 module.exports = {
-  input: 'src/entrance/libTypes.ts',
+  input: "src/entrance/libTypes.ts",
   plugins,
-  output: [
-    outputObj,
-  ],
+  output: [outputObj],
 };
